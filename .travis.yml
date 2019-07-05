@@ -5,8 +5,14 @@ go:
   - 1.11.x
   - 1.12.x
   - master
+os:
+  - linux
+  - osx
 
+dist: xenial
+sudo: false
+install: true
 script:
-  - make
+  - env GO111MODULE=on make
 notifications:
   email: false
