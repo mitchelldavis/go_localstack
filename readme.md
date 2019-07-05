@@ -7,12 +7,14 @@ go_localstack
 
 This project makes [localstack](https://github.com/localstack/localstack) available to golang tests.
 
-*Requirements*
+Requirements
+---
 
 - Go v1.12.0 or higher
 - Docker (Tested on version 19.03.0-rc Community Edition)
 
-*Example*
+Example
+---
 
 ```go
 
@@ -58,7 +60,21 @@ func TestMain(t *testing.M) {
 }
 ```
 
-*License*
+Build
+---
+
+```sh
+git clone git@github.com:mitchelldavis/go_localstack.git
+cd go_localstack
+make
+```
+
+Contribute
+---
+
+The more the merrier!
+
+License
 ---
 
 This is free and unencumbered software released into the public domain.
