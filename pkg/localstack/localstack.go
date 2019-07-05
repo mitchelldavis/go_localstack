@@ -8,7 +8,7 @@ and manage a Localstack docker container for your go tests.
 
 Requirements
 
-    Go v1.12.0 or higher
+    Go v1.11.0 or higher
     Docker (Tested on version 19.03.0-rc Community Edition)
 
 Example
