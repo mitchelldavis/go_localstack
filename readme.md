@@ -3,7 +3,7 @@ go_localstack
 
 [![Build Status](https://travis-ci.org/mitchelldavis/go_localstack.svg?branch=master)](https://travis-ci.org/mitchelldavis/go_localstack)
 [![License: Unlicense](https://img.shields.io/badge/license-Unlicense-blue.svg)](http://unlicense.org/)
-[![GoDoc](http://godoc.org/badge.png)](https://godoc.org/github.com/mitchelldavis/go_localstack/pkg/localstack)
+[![GoDoc](https://godoc.org/github.com/mitchelldavis/go_localstack/pkg/localstack?status.svg)](https://godoc.org/github.com/mitchelldavis/go_localstack/pkg/localstack)
 
 This project makes [localstack](https://github.com/localstack/localstack) available to golang tests.
 
