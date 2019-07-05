@@ -1,6 +1,8 @@
 go_localstack
 ===
 
+[![Build Status](https://travis-ci.org/mitchelldavis/go_localstack.svg?branch=master)](https://travis-ci.org/mitchelldavis/go_localstack)
+
 This project makes [localstack](https://github.com/localstack/localstack) available to golang tests.
 
 *Requirements*
