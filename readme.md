@@ -72,7 +72,9 @@ make
 Contribute
 ---
 
-The more the merrier!
+*The more the merrier!*
+
+Pull requests are welcome!
 
 License
 ---
