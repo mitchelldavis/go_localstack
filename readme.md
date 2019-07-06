@@ -83,6 +83,8 @@ TODO
 - [ ] Update Documentation/Readme with updated examples
 - [x] Update Localstack.EndpointFor to only redirect calls to requested services
 - [ ] Fix timing on container destruction.  In rare cases (usually when a test is canceled then another one is immediatly started again) a container may not be destroyed.
+- [ ] Fix the Dynamodb issue that pops up in the integration tests.
+  - There is a weird error message if you look at the logs of the docker container.
 
 License
 ---
