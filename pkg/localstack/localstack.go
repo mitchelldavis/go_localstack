@@ -68,6 +68,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws/endpoints"
     "github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
+	"github.com/aws/aws-sdk-go/aws/credentials"
 )
 
 // Localstack_Repository is the Localstack Docker repository
@@ -160,6 +161,7 @@ func (l *Localstack) CreateAWSSession() *session.Session {
 		EndpointResolver: *l,
 		DisableSSL: aws.Bool(true),
 		S3ForcePathStyle: aws.Bool(true),
+        Credentials: credentials.NewStaticCredentials("a", "b", "c"),
 	}))
 }
 
