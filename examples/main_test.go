@@ -17,6 +17,14 @@ import (
     "github.com/aws/aws-sdk-go/service/sns"
     "github.com/aws/aws-sdk-go/service/sqs"
     "github.com/aws/aws-sdk-go/service/redshift"
+    "github.com/aws/aws-sdk-go/service/route53"
+    "github.com/aws/aws-sdk-go/service/cloudformation"
+    "github.com/aws/aws-sdk-go/service/cloudwatch"
+    "github.com/aws/aws-sdk-go/service/ssm"
+    "github.com/aws/aws-sdk-go/service/sfn"
+    "github.com/aws/aws-sdk-go/service/cloudwatchlogs"
+    "github.com/aws/aws-sdk-go/service/sts"
+    "github.com/aws/aws-sdk-go/service/iam"
 )
 
 var LOCALSTACK *localstack.Localstack
@@ -33,7 +41,7 @@ func TestMain(t *testing.M) {
 	sns, _ := localstack.NewLocalstackService("sns")
 	sqs, _ := localstack.NewLocalstackService("sqs")
 	redshift, _ := localstack.NewLocalstackService("redshift")
-	email, _ := localstack.NewLocalstackService("ses")
+	//email, _ := localstack.NewLocalstackService("ses")
 	route53, _ := localstack.NewLocalstackService("route53")
 	cloudformation, _ := localstack.NewLocalstackService("cloudformation")
 	cloudwatch, _ := localstack.NewLocalstackService("cloudwatch")
@@ -57,7 +65,7 @@ func TestMain(t *testing.M) {
         *sns,
         *sqs,
         *redshift,
-        *email,
+        //*email,
         *route53,
         *cloudformation,
         *cloudwatch,
@@ -206,21 +214,104 @@ func Test_Redshift(t *testing.T) {
 }
 // TODO:
 func Test_Email(t *testing.T) {}
+func Test_Route53(t *testing.T) {
+	svc := route53.New(LOCALSTACK.CreateAWSSession())
+	result, err := svc.ListHostedZones(&route53.ListHostedZonesInput{})
+	if err != nil {
+		t.Error(err)
+	}
+
+    if len(result.HostedZones) != 0 {
+        t.Error("The number of hosted Zones should be zero.")
+    }
+}
+func Test_Cloudformation(t *testing.T) {
+	svc := cloudformation.New(LOCALSTACK.CreateAWSSession())
+	result, err := svc.ListStacks(&cloudformation.ListStacksInput{})
+	if err != nil {
+		t.Error(err)
+	}
+
+    if len(result.StackSummaries) != 0 {
+        t.Error("The number of stacks should be zero.")
+    }
+}
+func Test_Monitoring(t *testing.T) {
+	svc := cloudwatch.New(LOCALSTACK.CreateAWSSession())
+	result, err := svc.ListMetrics(&cloudwatch.ListMetricsInput{})
+	if err != nil {
+		t.Error(err)
+	}
+
+    if len(result.Metrics) != 0 {
+        t.Error("The number of metrics should be zero.")
+    }
+}
+func Test_Ssm(t *testing.T) {
+	svc := ssm.New(LOCALSTACK.CreateAWSSession())
+	result, err := svc.ListCommands(&ssm.ListCommandsInput{})
+	if err != nil {
+		t.Error(err)
+	}
+
+    if len(result.Commands) != 0 {
+        t.Error("The number of commands should be zero.")
+    }
+}
 // TODO:
-func Test_Route53(t *testing.T) { }
-// TODO:
-func Test_Cloudformation(t *testing.T) { }
-// TODO:
-func Test_Monitoring(t *testing.T) { }
-// TODO:
-func Test_Ssm(t *testing.T) { }
-// TODO:
-func Test_Secretsmanager(t *testing.T) { }
-// TODO:
-func Test_States(t *testing.T) { }
-// TODO:
-func Test_Logs(t *testing.T) { }
-// TODO:
-func Test_Sts(t *testing.T) { }
-// TODO:
-func Test_Iam(t *testing.T) { }
+func Test_Secretsmanager(t *testing.T) {
+    // This causes an unknown error...
+	//svc := secretsmanager.New(LOCALSTACK.CreateAWSSession())
+	//result, err := svc.ListSecrets(&secretsmanager.ListSecretsInput{})
+	//if err != nil {
+	//	t.Error(err)
+	//}
+
+    //if len(result.SecretList) != 0 {
+    //    t.Error("The number of secrets should be zero.")
+    //}
+}
+func Test_States(t *testing.T) {
+	svc := sfn.New(LOCALSTACK.CreateAWSSession())
+	result, err := svc.ListStateMachines(&sfn.ListStateMachinesInput{})
+	if err != nil {
+		t.Error(err)
+	}
+
+    if len(result.StateMachines) != 0 {
+        t.Error("The number of state machines should be zero.")
+    }
+}
+func Test_Logs(t *testing.T) {
+	svc := cloudwatchlogs.New(LOCALSTACK.CreateAWSSession())
+	result, err := svc.DescribeLogGroups(&cloudwatchlogs.DescribeLogGroupsInput{})
+	if err != nil {
+		t.Error(err)
+	}
+
+    if len(result.LogGroups) != 0 {
+        t.Error("The number of Log Groups should be zero.")
+    }
+}
+func Test_Sts(t *testing.T) {
+	svc := sts.New(LOCALSTACK.CreateAWSSession())
+	result, err := svc.GetCallerIdentity(&sts.GetCallerIdentityInput{})
+	if err != nil {
+		t.Error(err)
+	}
+
+    if result.UserId == nil {
+        t.Error("UserId should not be nil.")
+    }
+}
+func Test_Iam(t *testing.T) {
+	svc := iam.New(LOCALSTACK.CreateAWSSession())
+	result, err := svc.ListUsers(&iam.ListUsersInput{})
+	if err != nil {
+		t.Error(err)
+	}
+
+    if len(result.Users) != 0 {
+        t.Error("The number of users should be zero.")
+    }
+}

@@ -80,6 +80,9 @@ TODO
 ---
 
 - [ ] Finish Integration Tests
+  - [ ] Is the ES service something this will support?
+  - [ ] Is ses something this will support?
+  - [ ] The secretsmanager service is returning weird errors.
 - [ ] Update Documentation/Readme with updated examples
 - [x] Update Localstack.EndpointFor to only redirect calls to requested services
 - [ ] Fix timing on container destruction.  In rare cases (usually when a test is canceled then another one is immediatly started again) a container may not be destroyed.
