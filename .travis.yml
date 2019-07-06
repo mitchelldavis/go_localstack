@@ -6,7 +6,9 @@ go:
   - master
 os:
   - linux
-  - osx
+
+services:
+  - docker
 
 dist: xenial
 sudo: false

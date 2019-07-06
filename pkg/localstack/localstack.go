@@ -8,8 +8,7 @@ and manage a Localstack docker container for your go tests.
 
 Requirements
 
-    Go v1.11.0 or higher
-    Docker (Tested on version 19.03.0-rc Community Edition)
+    Go v1.11.0 or higher Docker (Tested on version 19.03.0-rc Community Edition)
 
 Example
 
@@ -66,6 +65,9 @@ import (
 	"bufio"
 	"github.com/ory/dockertest"
 	"github.com/ory/dockertest/docker"
+	"github.com/aws/aws-sdk-go/aws/endpoints"
+    "github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/session"
 )
 
 // Localstack_Repository is the Localstack Docker repository
@@ -99,6 +101,66 @@ func (ls *Localstack) Destroy() error {
 	}
 
 	return nil
+}
+
+// EndpointResolver is necessary to route traffic to AWS services in your code to the Localstack
+// endpoints.
+func (l Localstack) EndpointFor(service, region string, optFns ...func(*endpoints.Options)) (endpoints.ResolvedEndpoint, error) {
+    if service == endpoints.ApigatewayServiceID {
+        return endpoints.ResolvedEndpoint { URL: fmt.Sprintf("http://%s", l.Resource.GetHostPort("4567/tcp")) }, nil
+    } else if service == endpoints.KinesisServiceID {
+        return endpoints.ResolvedEndpoint { URL: fmt.Sprintf("http://%s", l.Resource.GetHostPort("4568/tcp")) }, nil
+    } else if service == endpoints.DynamodbServiceID {
+        return endpoints.ResolvedEndpoint { URL: fmt.Sprintf("http://%s", l.Resource.GetHostPort("4569/tcp")) }, nil
+    } else if service == endpoints.StreamsDynamodbServiceID {
+        return endpoints.ResolvedEndpoint { URL: fmt.Sprintf("http://%s", l.Resource.GetHostPort("4570/tcp")) }, nil
+    } else if service == endpoints.EsServiceID {
+        return endpoints.ResolvedEndpoint { URL: fmt.Sprintf("http://%s", l.Resource.GetHostPort("4571/tcp")) }, nil
+    } else if service == endpoints.S3ServiceID {
+        return endpoints.ResolvedEndpoint { URL: fmt.Sprintf("http://%s", l.Resource.GetHostPort("4572/tcp")) }, nil
+    } else if service == endpoints.FirehoseServiceID {
+        return endpoints.ResolvedEndpoint { URL: fmt.Sprintf("http://%s", l.Resource.GetHostPort("4573/tcp")) }, nil
+    } else if service == endpoints.LambdaServiceID {
+        return endpoints.ResolvedEndpoint { URL: fmt.Sprintf("http://%s", l.Resource.GetHostPort("4574/tcp")) }, nil
+    } else if service == endpoints.SnsServiceID {
+        return endpoints.ResolvedEndpoint { URL: fmt.Sprintf("http://%s", l.Resource.GetHostPort("4575/tcp")) }, nil
+    } else if service == endpoints.SqsServiceID {
+        return endpoints.ResolvedEndpoint { URL: fmt.Sprintf("http://%s", l.Resource.GetHostPort("4576/tcp")) }, nil
+    } else if service == endpoints.RedshiftServiceID {
+        return endpoints.ResolvedEndpoint { URL: fmt.Sprintf("http://%s", l.Resource.GetHostPort("4577/tcp")) }, nil
+    } else if service == endpoints.EmailServiceID {
+        return endpoints.ResolvedEndpoint { URL: fmt.Sprintf("http://%s", l.Resource.GetHostPort("4579/tcp")) }, nil
+    } else if service == endpoints.Route53ServiceID {
+        return endpoints.ResolvedEndpoint { URL: fmt.Sprintf("http://%s", l.Resource.GetHostPort("4580/tcp")) }, nil
+    } else if service == endpoints.CloudformationServiceID {
+        return endpoints.ResolvedEndpoint { URL: fmt.Sprintf("http://%s", l.Resource.GetHostPort("4581/tcp")) }, nil
+    } else if service == endpoints.MonitoringServiceID {
+        return endpoints.ResolvedEndpoint { URL: fmt.Sprintf("http://%s", l.Resource.GetHostPort("4582/tcp")) }, nil
+    } else if service == endpoints.SsmServiceID {
+        return endpoints.ResolvedEndpoint { URL: fmt.Sprintf("http://%s", l.Resource.GetHostPort("4583/tcp")) }, nil
+    } else if service == endpoints.SecretsmanagerServiceID {
+        return endpoints.ResolvedEndpoint { URL: fmt.Sprintf("http://%s", l.Resource.GetHostPort("4584/tcp")) }, nil
+    } else if service == endpoints.StatesServiceID {
+        return endpoints.ResolvedEndpoint { URL: fmt.Sprintf("http://%s", l.Resource.GetHostPort("4585/tcp")) }, nil
+    } else if service == endpoints.LogsServiceID {
+        return endpoints.ResolvedEndpoint { URL: fmt.Sprintf("http://%s", l.Resource.GetHostPort("4586/tcp")) }, nil
+    } else if service == endpoints.StsServiceID {
+        return endpoints.ResolvedEndpoint { URL: fmt.Sprintf("http://%s", l.Resource.GetHostPort("4592/tcp")) }, nil
+    } else if service == endpoints.IamServiceID {
+        return endpoints.ResolvedEndpoint { URL: fmt.Sprintf("http://%s", l.Resource.GetHostPort("4593/tcp")) }, nil
+    } else {
+        return endpoints.DefaultResolver().EndpointFor(service, region, optFns...)
+    }
+}
+
+// CreateAWSSession should be used to make sure that your AWS SDK traffic is routing to Localstack correctly.
+func (l *Localstack) CreateAWSSession() *session.Session {
+	return session.Must(session.NewSession(&aws.Config{
+        Region: aws.String("us-east-1"),
+		EndpointResolver: *l,
+		DisableSSL: aws.Bool(true),
+		S3ForcePathStyle: aws.Bool(true),
+	}))
 }
 
 // NewLocalstack creates a new Localstack docker container based on the latest version.
@@ -164,7 +226,6 @@ func newLocalstack(services *LocalstackServiceCollection, wrapper DockerWrapper,
 	// Sixth, we wait for the services to be ready before we allow the tests
 	// to be run.
 	for _, service := range *services {
-		//fmt.Println(fmt.Sprintf("Testing connectivity with %s", service.Name))
 		if err := wrapper.Retry(func() error {
 
 			// We have to use a method that checks the output
@@ -172,7 +233,6 @@ func newLocalstack(services *LocalstackServiceCollection, wrapper DockerWrapper,
 			// connetivity on the ports doesn't work.
 			client, err := docker.NewClientFromEnv()
 			if err != nil {
-				fmt.Println(err)
 				return errors.New(fmt.Sprintf("Unable to create a docker client: %s", err))
 			}
 
@@ -187,7 +247,6 @@ func newLocalstack(services *LocalstackServiceCollection, wrapper DockerWrapper,
 			}
 			err = client.Logs(logsOptions)
 			if err != nil {
-				fmt.Println(err)
 				return errors.New(fmt.Sprintf("Unable to retrieve logs for container %s: %s", localstack.Container.ID, err))
 			}
 
@@ -196,12 +255,10 @@ func newLocalstack(services *LocalstackServiceCollection, wrapper DockerWrapper,
 				token := strings.TrimSpace(scanner.Text())
 				expected := "Ready."
 				if strings.Contains(strings.TrimSpace(token),expected) {
-					fmt.Println(token)
 					return nil
 				}
 			}
 			if err := scanner.Err(); err != nil {
-				fmt.Println(err)
 				return errors.New(fmt.Sprintf("Reading input: %s", err))
 			}
 			return errors.New("Not Ready")
