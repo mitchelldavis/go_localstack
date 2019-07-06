@@ -70,7 +70,7 @@ func NewLocalstackService(name string) (*LocalstackService, error) {
 		}, nil
 	case "dynamodbstreams":
 		return &LocalstackService {
-			Name: "dynamodb",
+			Name: "dynamodbstreams",
 			Protocol: "tcp",
 			Port: 4570,
 		}, nil
@@ -212,4 +212,14 @@ func (a LocalstackServiceCollection) Less(i, j int) bool {
 func (a *LocalstackServiceCollection) Sort() *LocalstackServiceCollection { 
 	sort.Sort(a)
 	return a
+}
+
+func (a *LocalstackServiceCollection) Contains(name string) bool {
+    for _, value := range *a {
+        if value.Name == name {
+            return true
+        }
+    }
+
+    return false
 }

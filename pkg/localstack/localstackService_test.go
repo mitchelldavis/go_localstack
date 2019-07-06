@@ -232,3 +232,26 @@ func Test_LocalstackServiceCollection_Sort(t *testing.T) {
 		log.Fatal("The sort order isn't matching what is expected.")
 	}
 }
+
+func Test_LocalstackServiceCollection_Contains(t *testing.T) {
+	s3, _ := NewLocalstackService("s3")
+	sqs, _ := NewLocalstackService("sqs")
+
+    lsc := LocalstackServiceCollection {
+        *s3,
+        *sqs,
+    }
+
+    if !lsc.Contains("s3") {
+        t.Error("s3 was added to the collection but Contains says it was not.")
+    }
+    if !lsc.Contains("sqs") {
+        t.Error("sqs was added to the collection but Contains says it isn't there.")
+    }
+    if lsc.Contains("redshift") {
+        t.Error("redshift was not added to the collection but Contains says it was.")
+    }
+    if lsc.Contains("dynamodb") {
+        t.Error("dynamodb was not added to the collection but Contains says it was.")
+    }
+}

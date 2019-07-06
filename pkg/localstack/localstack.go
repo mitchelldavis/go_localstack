@@ -107,47 +107,68 @@ func (ls *Localstack) Destroy() error {
 // EndpointResolver is necessary to route traffic to AWS services in your code to the Localstack
 // endpoints.
 func (l Localstack) EndpointFor(service, region string, optFns ...func(*endpoints.Options)) (endpoints.ResolvedEndpoint, error) {
-    if service == endpoints.ApigatewayServiceID {
+    if service == endpoints.ApigatewayServiceID && 
+       l.Services.Contains("apigateway") {
         return endpoints.ResolvedEndpoint { URL: fmt.Sprintf("http://%s", l.Resource.GetHostPort("4567/tcp")) }, nil
-    } else if service == endpoints.KinesisServiceID {
+    } else if service == endpoints.KinesisServiceID &&
+              l.Services.Contains("kinesis") {
         return endpoints.ResolvedEndpoint { URL: fmt.Sprintf("http://%s", l.Resource.GetHostPort("4568/tcp")) }, nil
-    } else if service == endpoints.DynamodbServiceID {
-        return endpoints.ResolvedEndpoint { URL: fmt.Sprintf("http://%s", l.Resource.GetHostPort("4569/tcp")) }, nil
-    } else if service == endpoints.StreamsDynamodbServiceID {
+    } else if service == endpoints.DynamodbServiceID &&
+              l.Services.Contains("dynamodb") {
         return endpoints.ResolvedEndpoint { URL: fmt.Sprintf("http://%s", l.Resource.GetHostPort("4570/tcp")) }, nil
-    } else if service == endpoints.EsServiceID {
+    } else if service == endpoints.StreamsDynamodbServiceID &&
+              l.Services.Contains("dynamodbstreams")  {
+        return endpoints.ResolvedEndpoint { URL: fmt.Sprintf("http://%s", l.Resource.GetHostPort("4570/tcp")) }, nil
+    } else if service == endpoints.EsServiceID &&
+              l.Services.Contains("es")  {
         return endpoints.ResolvedEndpoint { URL: fmt.Sprintf("http://%s", l.Resource.GetHostPort("4571/tcp")) }, nil
-    } else if service == endpoints.S3ServiceID {
+    } else if service == endpoints.S3ServiceID &&
+              l.Services.Contains("s3")  {
         return endpoints.ResolvedEndpoint { URL: fmt.Sprintf("http://%s", l.Resource.GetHostPort("4572/tcp")) }, nil
-    } else if service == endpoints.FirehoseServiceID {
+    } else if service == endpoints.FirehoseServiceID &&
+              l.Services.Contains("firehose")  {
         return endpoints.ResolvedEndpoint { URL: fmt.Sprintf("http://%s", l.Resource.GetHostPort("4573/tcp")) }, nil
-    } else if service == endpoints.LambdaServiceID {
+    } else if service == endpoints.LambdaServiceID &&
+              l.Services.Contains("lambda")  {
         return endpoints.ResolvedEndpoint { URL: fmt.Sprintf("http://%s", l.Resource.GetHostPort("4574/tcp")) }, nil
-    } else if service == endpoints.SnsServiceID {
+    } else if service == endpoints.SnsServiceID &&
+              l.Services.Contains("sns")  {
         return endpoints.ResolvedEndpoint { URL: fmt.Sprintf("http://%s", l.Resource.GetHostPort("4575/tcp")) }, nil
-    } else if service == endpoints.SqsServiceID {
+    } else if service == endpoints.SqsServiceID &&
+              l.Services.Contains("sqs")  {
         return endpoints.ResolvedEndpoint { URL: fmt.Sprintf("http://%s", l.Resource.GetHostPort("4576/tcp")) }, nil
-    } else if service == endpoints.RedshiftServiceID {
+    } else if service == endpoints.RedshiftServiceID &&
+              l.Services.Contains("redshift")  {
         return endpoints.ResolvedEndpoint { URL: fmt.Sprintf("http://%s", l.Resource.GetHostPort("4577/tcp")) }, nil
-    } else if service == endpoints.EmailServiceID {
+    } else if service == endpoints.EmailServiceID &&
+              l.Services.Contains("ses")  {
         return endpoints.ResolvedEndpoint { URL: fmt.Sprintf("http://%s", l.Resource.GetHostPort("4579/tcp")) }, nil
-    } else if service == endpoints.Route53ServiceID {
+    } else if service == endpoints.Route53ServiceID &&
+              l.Services.Contains("route53")  {
         return endpoints.ResolvedEndpoint { URL: fmt.Sprintf("http://%s", l.Resource.GetHostPort("4580/tcp")) }, nil
-    } else if service == endpoints.CloudformationServiceID {
+    } else if service == endpoints.CloudformationServiceID &&
+              l.Services.Contains("cloudformation")  {
         return endpoints.ResolvedEndpoint { URL: fmt.Sprintf("http://%s", l.Resource.GetHostPort("4581/tcp")) }, nil
-    } else if service == endpoints.MonitoringServiceID {
+    } else if service == endpoints.MonitoringServiceID &&
+              l.Services.Contains("cloudwatch")  {
         return endpoints.ResolvedEndpoint { URL: fmt.Sprintf("http://%s", l.Resource.GetHostPort("4582/tcp")) }, nil
-    } else if service == endpoints.SsmServiceID {
+    } else if service == endpoints.SsmServiceID &&
+              l.Services.Contains("ssm")  {
         return endpoints.ResolvedEndpoint { URL: fmt.Sprintf("http://%s", l.Resource.GetHostPort("4583/tcp")) }, nil
-    } else if service == endpoints.SecretsmanagerServiceID {
+    } else if service == endpoints.SecretsmanagerServiceID &&
+              l.Services.Contains("secretsmanager")  {
         return endpoints.ResolvedEndpoint { URL: fmt.Sprintf("http://%s", l.Resource.GetHostPort("4584/tcp")) }, nil
-    } else if service == endpoints.StatesServiceID {
+    } else if service == endpoints.StatesServiceID &&
+              l.Services.Contains("stepfunctions")  {
         return endpoints.ResolvedEndpoint { URL: fmt.Sprintf("http://%s", l.Resource.GetHostPort("4585/tcp")) }, nil
-    } else if service == endpoints.LogsServiceID {
+    } else if service == endpoints.LogsServiceID &&
+              l.Services.Contains("logs")  {
         return endpoints.ResolvedEndpoint { URL: fmt.Sprintf("http://%s", l.Resource.GetHostPort("4586/tcp")) }, nil
-    } else if service == endpoints.StsServiceID {
+    } else if service == endpoints.StsServiceID &&
+              l.Services.Contains("sts")  {
         return endpoints.ResolvedEndpoint { URL: fmt.Sprintf("http://%s", l.Resource.GetHostPort("4592/tcp")) }, nil
-    } else if service == endpoints.IamServiceID {
+    } else if service == endpoints.IamServiceID &&
+              l.Services.Contains("iam")  {
         return endpoints.ResolvedEndpoint { URL: fmt.Sprintf("http://%s", l.Resource.GetHostPort("4593/tcp")) }, nil
     } else {
         return endpoints.DefaultResolver().EndpointFor(service, region, optFns...)

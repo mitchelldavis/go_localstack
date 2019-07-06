@@ -81,7 +81,7 @@ TODO
 
 - [ ] Finish Integration Tests
 - [ ] Update Documentation/Readme with updated examples
-- [ ] Update Localstack.EndpointFor to only redirect calls to requested services
+- [x] Update Localstack.EndpointFor to only redirect calls to requested services
 - [ ] Fix timing on container destruction.  In rare cases (usually when a test is canceled then another one is immediatly started again) a container may not be destroyed.
 
 License
