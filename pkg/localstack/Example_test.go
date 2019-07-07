@@ -14,6 +14,9 @@ import (
 // In this example we initialize Localstack with the S3 service
 // enabled, create a bucket, upload a file to that bucket, then 
 // download that file from s3 and output it's content.
+//
+// For complete testing examples, see the examples in the github.com
+// repository.  https://github.com/mitchelldavis/go_localhost/examples
 func Example_s3() {
     // LOCALSTACK: A reference to the Localstack object
     var LOCALSTACK *Localstack
