@@ -14,7 +14,7 @@ import (
 // In this example we initialize Localstack with the S3 service
 // enabled, create a bucket, upload a file to that bucket, then 
 // download that file from s3 and output it's content.
-func Example_S3() {
+func Example_s3() {
     // LOCALSTACK: A reference to the Localstack object
     var LOCALSTACK *Localstack
     
@@ -91,5 +91,3 @@ func Example_S3() {
     fmt.Println(string(text))
     // Output: Hello World
 }
-
-
