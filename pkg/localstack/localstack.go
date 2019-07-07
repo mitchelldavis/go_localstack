@@ -1,7 +1,4 @@
 /*
-
-go_localstack
-
 This package was written to help writing tests with Localstack.  
 (https://github.com/localstack/localstack)  It uses libraries that help create
 and manage a Localstack docker container for your go tests.
@@ -10,7 +7,6 @@ Requirements
 
     Go v1.11.0 or higher 
     Docker (Tested on version 19.03.0-rc Community Edition)
-
 */
 package localstack
 
