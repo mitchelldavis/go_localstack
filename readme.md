@@ -13,52 +13,11 @@ Requirements
 - Go v1.11.0 or higher
 - Docker (Tested on version 19.03.0-rc Community Edition)
 
-Example
+Examples
 ---
 
-```go
-
-func TestMain(t *testing.M) {
-    // Here we define a S3 Localstack Service Definition
-    s3, err := localstack.NewLocalstackService("s3")
-    if err != nil {
-        log.Fatal(fmt.Sprintf("Unable to create the s3 Service: %s", err))
-    }
-
-    // Here we define a SQS Localstack Service Definition
-    sqs, err := localstack.NewLocalstackService("sqs")
-    if err != nil {
-        log.Fatal(fmt.Sprintf("Unable to create the sqs Service: %s", err))
-    }
-
-    // Combine all the services we're requesting
-    LOCALSTACK_SERVICES := &localstack.LocalstackServiceCollection {
-        *s3,
-        *sqs,
-    }
-
-    // Initialize the services
-    LOCALSTACK, err = localstack.NewLocalstack(LOCALSTACK_SERVICES)
-    if err != nil {
-        log.Fatal(fmt.Sprintf("Unable to create the localstack instance: %s", err))
-    }
-    if LOCALSTACK == nil {
-        log.Fatal("LOCALSTACK was nil.")
-    }
-
-    // If you need to initialize s3 or sqs, do it here.
-
-    // RUN TESTS HERE
-    result := t.Run()
-
-    // We can't use defer this because os.Exit terminates the application in place
-    // and the defered function won't be called.  We need to call os.Exit because
-    // we need to correctly report the test results.
-    LOCALSTACK.Destroy()
-
-    os.Exit(result)
-}
-```
+- [All Services](/examples/allservices/allservices_test.go)
+- [S3](/examples/s3_test.go)
 
 Build
 ---
@@ -83,6 +42,7 @@ TODO
   - [ ] Is the ES service something this will support?
   - [ ] Is ses something this will support?
   - [ ] The secretsmanager service is returning weird errors.
+- [x] Update Readme with updated examples
 - [ ] Update Documentation/Readme with updated examples
 - [x] Update Localstack.EndpointFor to only redirect calls to requested services
 - [ ] Fix timing on container destruction.  In rare cases (usually when a test is canceled then another one is immediatly started again) a container may not be destroyed.
