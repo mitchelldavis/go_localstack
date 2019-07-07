@@ -17,7 +17,7 @@ Examples
 ---
 
 - [All Services](/examples/allservices/allservices_test.go)
-- [S3](/examples/s3_test.go)
+- [S3](/examples/s3/s3_test.go)
 
 Build
 ---
