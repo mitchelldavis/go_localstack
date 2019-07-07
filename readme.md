@@ -43,7 +43,7 @@ TODO
   - [ ] Is ses something this will support?
   - [ ] The secretsmanager service is returning weird errors.
 - [x] Update Readme with updated examples
-- [ ] Update Documentation with updated examples
+- [x] Update Documentation with updated examples
 - [x] Update Localstack.EndpointFor to only redirect calls to requested services
 - [ ] Fix timing on container destruction.  In rare cases (usually when a test is canceled then another one is immediatly started again) a container may not be destroyed.
 - [ ] Fix the Dynamodb issue that pops up in the integration tests.
