@@ -95,18 +95,12 @@ func InitializeLocalstack(t *testing.M) int {
     if LOCALSTACK == nil {
         log.Fatal("LOCALSTACK was nil.")
     }
+    defer LOCALSTACK.Destroy()
 
     // If you need to initialize s3 or sqs, do it here.
 
     // RUN TESTS HERE
-    result := t.Run()
-
-    // We can't use defer this because os.Exit terminates the application in place
-    // and the defered function won't be called.  We need to call os.Exit because
-    // we need to correctly report the test results.
-    LOCALSTACK.Destroy()
-
-    os.Exit(result)
+    return t.Run()
 }
 
 func Test_APIGateway(t *testing.T) {
