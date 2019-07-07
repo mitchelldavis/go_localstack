@@ -5,7 +5,7 @@ go_localstack
 [![License: Unlicense](https://img.shields.io/badge/license-Unlicense-blue.svg)](http://unlicense.org/)
 [![GoDoc](https://godoc.org/github.com/mitchelldavis/go_localstack/pkg/localstack?status.svg)](https://godoc.org/github.com/mitchelldavis/go_localstack/pkg/localstack)
 
-This project makes [localstack](https://github.com/localstack/localstack) available to golang tests.
+This project makes [localstack](https://github.com/localstack/localstack) easier to use in golang tests.
 
 Requirements
 ---
