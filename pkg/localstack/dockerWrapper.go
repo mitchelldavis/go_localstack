@@ -3,6 +3,7 @@ package localstack
 import (
     "errors"
     "fmt"
+    "time"
 	"github.com/ory/dockertest"
 	"github.com/ory/dockertest/docker"
 )
@@ -50,6 +51,7 @@ func (dw *_DockerWrapper) RunWithOptions(opts *dockertest.RunOptions, hcOpts ...
 
 func (dw *_DockerWrapper) Retry(op func() error) error {
 	pool, err := dockertest.NewPool("")
+    pool.MaxWait = time.Minute * 2.5
 	if err != nil {
 		return errors.New(fmt.Sprintf("Could not connect to docker: %s", err))
 	}
