@@ -88,6 +88,22 @@ func InitializeLocalstack(t *testing.M) int {
 
     // Initialize the services
     var err error
+
+    // Easter Egg: It does take some time to get a Localstack container up and running.
+    // While testing a particular functionality, you can request a specific
+    // instances of Localstack from docker that is already running.
+    // The commented line below shows you how to do that. (Also, you can
+    // specify a particular repository and tag)  The benefit of this is that
+    // you can keep the container alive between tests by commenting out the 
+    // 'defer LOCALSTACK.Destroy()' line further below.  This way, your particular
+    // instance of Localstack stays alive between tests and you speed up your feedback loop.
+    //LOCALSTACK, err = localstack.NewSpecificLocalstack(
+    //    LOCALSTACK_SERVICES, 
+    //    "test", 
+    //    localstack.Localstack_Repository, 
+    //    localstack.Localstack_Tag)
+
+    // When finished with your tests, make sure you create a generic version of Localstack
     LOCALSTACK, err = localstack.NewLocalstack(LOCALSTACK_SERVICES)
     if err != nil {
         log.Fatal(fmt.Sprintf("Unable to create the localstack instance: %s", err))
@@ -95,6 +111,8 @@ func InitializeLocalstack(t *testing.M) int {
     if LOCALSTACK == nil {
         log.Fatal("LOCALSTACK was nil.")
     }
+    
+    // It does take time to spin up and wait for a new Localstack container to get going.
     defer LOCALSTACK.Destroy()
 
     // If you need to initialize s3 or sqs, do it here.

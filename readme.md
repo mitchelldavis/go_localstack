@@ -38,15 +38,18 @@ Pull requests are welcome!
 TODO
 ---
 
-- [ ] Finish Integration Tests
-  - [ ] Is the ES service something this will support?
-  - [ ] Is ses something this will support?
-  - [ ] The secretsmanager service is returning weird errors.
+- [x] Finish Integration Tests
+  - [ ] ~~Is the ES service something this will support?~~
+    - The first pull request will start this work.
+  - [ ] ~~Is ses something this will support?~~
+    - The first pull request will start this work.
+  - [ ] ~~The secretsmanager service is returning weird errors.~~
+    - The first pull request will start this work.
 - [x] Update Readme with updated examples
 - [x] Update Documentation with updated examples
 - [x] Update Localstack.EndpointFor to only redirect calls to requested services
-- [ ] Fix timing on container destruction.  In rare cases (usually when a test is canceled then another one is immediatly started again) a container may not be destroyed.
-- [ ] Fix the Dynamodb issue that pops up in the integration tests.
+- [x] Fix timing on container destruction.  In rare cases (usually when a test is canceled then another one is immediatly started again) a container may not be destroyed.
+- [x] Fix the Dynamodb issue that pops up in the integration tests.
   - There is a weird error message if you look at the logs of the docker container.
 
 License

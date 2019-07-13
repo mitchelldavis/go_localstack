@@ -12,6 +12,11 @@ import (
     "github.com/aws/aws-sdk-go/aws"
     "github.com/aws/aws-sdk-go/aws/endpoints"
 ) 
+
+const (
+    Localstack_Name = "testLocalstackName"
+)
+
 func getLocalstack_Found(services *LocalstackServiceCollection, ctrl *gomock.Controller) (*mock_localstack.MockDockerWrapper, *docker.Container) {
     m := mock_localstack.NewMockDockerWrapper(ctrl)
     container := &docker.Container {
@@ -27,7 +32,10 @@ func getLocalstack_Found(services *LocalstackServiceCollection, ctrl *gomock.Con
     ListContainers(gomock.Any()).
     Times(1).
     Return([]docker.APIContainers {
-        docker.APIContainers {Image: fmt.Sprintf("%s:%s", Localstack_Repository, Localstack_Tag)},
+        docker.APIContainers {
+            Image: fmt.Sprintf("%s:%s", Localstack_Repository, Localstack_Tag),
+            Names: []string {fmt.Sprintf("/%s", Localstack_Name)},
+        },
     }, nil)
 
     m.
@@ -73,7 +81,7 @@ func Test_getLocalstack_ErrorWithListContainers(t *testing.T) {
     services := &LocalstackServiceCollection {
         *sqs,
     }
-    actual, err := getLocalstack(services, m, Localstack_Repository, Localstack_Tag)
+    actual, err := getLocalstack(services, m, Localstack_Name, Localstack_Repository, Localstack_Tag)
 
     if actual != nil {
         log.Fatal("We're expecting the localstack result to be nil.")
@@ -108,7 +116,7 @@ func Test_getLocalstack_UnknownImage(t *testing.T) {
     services := &LocalstackServiceCollection {
         *sqs,
     }
-    actual, err := getLocalstack(services, m, Localstack_Repository, Localstack_Tag)
+    actual, err := getLocalstack(services, m, Localstack_Name, Localstack_Repository, Localstack_Tag)
 
     if actual != nil || err != nil {
         log.Fatal("We're expecting both the localstack and error return results to be nil.")
@@ -126,7 +134,10 @@ func Test_getLocalstack_ErrorWithInspectContainer(t *testing.T) {
     ListContainers(gomock.Any()).
     Times(1).
     Return([]docker.APIContainers {
-        docker.APIContainers {Image: fmt.Sprintf("%s:%s", Localstack_Repository, Localstack_Tag)},
+        docker.APIContainers {
+            Image: fmt.Sprintf("%s:%s", Localstack_Repository, Localstack_Tag),
+            Names: []string { fmt.Sprintf("/%s", Localstack_Name) },
+        },
     }, nil)
 
     m.
@@ -139,7 +150,7 @@ func Test_getLocalstack_ErrorWithInspectContainer(t *testing.T) {
     services := &LocalstackServiceCollection {
         *sqs,
     }
-    actual, err := getLocalstack(services, m, Localstack_Repository, Localstack_Tag)
+    actual, err := getLocalstack(services, m, Localstack_Name, Localstack_Repository, Localstack_Tag)
 
     if actual != nil {
         log.Fatal("We're expecting the localstack result to be nil.")
@@ -150,7 +161,7 @@ func Test_getLocalstack_ErrorWithInspectContainer(t *testing.T) {
     }
 }
 
-func Test_getLocalstack_ContainerExistsButHasDifferentServices(t *testing.T) {
+func Test_getLocalstack_ContainerExistsButHasDifferentName(t *testing.T) {
     ctrl := gomock.NewController(t)
     defer ctrl.Finish()	
 
@@ -162,33 +173,29 @@ func Test_getLocalstack_ContainerExistsButHasDifferentServices(t *testing.T) {
     ListContainers(gomock.Any()).
     Times(1).
     Return([]docker.APIContainers {
-        docker.APIContainers {Image: fmt.Sprintf("%s:%s", Localstack_Repository, Localstack_Tag)},
+        docker.APIContainers {
+            Image: fmt.Sprintf("%s:%s", Localstack_Repository, Localstack_Tag),
+            Names: []string { "DummyName" },
+        },
     }, nil)
 
     m.
     EXPECT().
     InspectContainer(gomock.Any()).
-    Times(1).
-    Return(&docker.Container {
-        Config: &docker.Config {
-            Env: []string {
-                "NOTSERVICES=DUMMY",
-            },
-        },
-    }, nil)
+    Times(0)
 
     sqs, _ := NewLocalstackService("sqs")
     services := &LocalstackServiceCollection {
         *sqs,
     }
-    actual, err := getLocalstack(services, m, Localstack_Repository, Localstack_Tag)
+    actual, err := getLocalstack(services, m, Localstack_Name, Localstack_Repository, Localstack_Tag)
 
     if actual != nil {
         log.Fatal("We're expecting the localstack result to be nil.")
     }
 
-    if err == nil {
-        log.Fatal("We're expecting the error returned to be populated.")	
+    if err != nil {
+        log.Fatal("We're not expecting an error here.")	
     }
 }
 
@@ -214,7 +221,7 @@ func Test_getLocalstack_UnableToFindContainer(t *testing.T) {
     services := &LocalstackServiceCollection {
         *sqs,
     }
-    actual, err := getLocalstack(services, m, Localstack_Repository, Localstack_Tag)
+    actual, err := getLocalstack(services, m, Localstack_Name, Localstack_Repository, Localstack_Tag)
 
     if actual != nil || err != nil {
         log.Fatal("We're expecting both the localstack and error return results to be nil.")
@@ -231,13 +238,63 @@ func Test_getLocalstack_ContainerExists(t *testing.T) {
     }
     m, c := getLocalstack_Found(services, ctrl)
 
-    actual, err := getLocalstack(services, m, Localstack_Repository, Localstack_Tag)
+    actual, err := getLocalstack(services, m, Localstack_Name, Localstack_Repository, Localstack_Tag)
 
     if err != nil {
         log.Fatal("We're expecting the error returned to be nil.")	
     }
 
     if actual.Container != c {
+        log.Fatal("The actual result doesn't match what was expected.")
+    }
+}
+
+func Test_getLocalstack_ContainerExists_WithinMultiple(t *testing.T) {
+    ctrl := gomock.NewController(t)
+    defer ctrl.Finish()	
+
+    sqs, _ := NewLocalstackService("sqs")
+    services := &LocalstackServiceCollection {
+        *sqs,
+    }
+
+    m := mock_localstack.NewMockDockerWrapper(ctrl)
+    container := &docker.Container {
+        Config: &docker.Config {
+            Env: []string {
+                fmt.Sprintf("SERVICES=%s", services.GetServiceMap()),
+            },
+        },
+    }
+
+    m.
+    EXPECT().
+    ListContainers(gomock.Any()).
+    Times(1).
+    Return([]docker.APIContainers {
+        docker.APIContainers {
+            Image: fmt.Sprintf("%s:%s", Localstack_Repository, Localstack_Tag),
+            Names: []string {fmt.Sprintf("/%s", Localstack_Name)},
+        },
+        docker.APIContainers {
+            Image: fmt.Sprintf("%s:%s", Localstack_Repository, Localstack_Tag),
+            Names: []string {"/DummyContainer"},
+        },
+    }, nil)
+
+    m.
+    EXPECT().
+    InspectContainer(gomock.Any()).
+    Times(1).
+    Return(container, nil)
+
+    actual, err := getLocalstack(services, m, "DummyContainer", Localstack_Repository, Localstack_Tag)
+
+    if err != nil {
+        log.Fatal("We're expecting the error returned to be nil.")	
+    }
+
+    if actual.Container != container {
         log.Fatal("The actual result doesn't match what was expected.")
     }
 }
@@ -259,7 +316,7 @@ func Test_NewLocalstack_GetLocalstackReturnsError(t *testing.T) {
     Times(1).
     Return(nil, errors.New("Dummy Error"))
 
-    result, err := newLocalstack(services, m, Localstack_Repository, Localstack_Tag)
+    result, err := newLocalstack(services, m, Localstack_Name, Localstack_Repository, Localstack_Tag)
 
     if result != nil {
         log.Fatal("We were expecting the returned container to be nil.")
@@ -294,7 +351,7 @@ func Test_NewLocalstack_GetLocalstackReturnsResult(t *testing.T) {
     Times(2).
     Return(nil)
 
-    result, err := newLocalstack(services, m, Localstack_Repository, Localstack_Tag)
+    result, err := newLocalstack(services, m, Localstack_Name, Localstack_Repository, Localstack_Tag)
 
     if err != nil {
         log.Fatal("We were expecting the returned error to be nil.")
@@ -335,7 +392,7 @@ func Test_NewLocalstack_GetLocalstackReturnsResult_RetryFailsOnFirstService(t *t
         Return(nil),
     )
 
-    result, err := newLocalstack(services, m, Localstack_Repository, Localstack_Tag)
+    result, err := newLocalstack(services, m, Localstack_Name, Localstack_Repository, Localstack_Tag)
 
     if result != nil {
         log.Fatal("We were expecting the returned container to be nil.")
@@ -375,7 +432,7 @@ func Test_NewLocalstack_GetLocalstackReturnsResult_RetryFailsOnSecondtService(t 
         Return(errors.New("DummyError")),
     )
 
-    result, err := newLocalstack(services, m, Localstack_Repository, Localstack_Tag)
+    result, err := newLocalstack(services, m, Localstack_Name, Localstack_Repository, Localstack_Tag)
 
     if result != nil {
         log.Fatal("We were expecting the returned container to be nil.")
@@ -411,7 +468,7 @@ func Test_NewLocalstack_StartFreshContainer_RunWithOptionsReturnsError(t *testin
     Times(0).
     Return(nil)
 
-    result, err := newLocalstack(services, m, Localstack_Repository, Localstack_Tag)
+    result, err := newLocalstack(services, m, Localstack_Name, Localstack_Repository, Localstack_Tag)
 
     if result != nil {
         log.Fatal("We were expecting the returned container to be nil.")
@@ -448,7 +505,7 @@ func Test_NewLocalstack_StartFreshContainer_RunWithOptions(t *testing.T) {
     Times(2).
     Return(nil)
 
-    result, err := newLocalstack(services, m, Localstack_Repository, Localstack_Tag)
+    result, err := newLocalstack(services, m, Localstack_Name, Localstack_Repository, Localstack_Tag)
 
     if err != nil {
         log.Fatal("We were expecting the returned error to be nil.")
@@ -529,7 +586,7 @@ func Test_EndpointFor(t *testing.T) {
     Times(21).
     Return(nil)
 
-    result, err := newLocalstack(services, m, Localstack_Repository, Localstack_Tag)
+    result, err := newLocalstack(services, m, Localstack_Name, Localstack_Repository, Localstack_Tag)
 
     if err != nil {
         log.Fatal("We were expecting the returned error to be nil.")
@@ -580,7 +637,7 @@ func Test_EndpointFor(t *testing.T) {
         t.Errorf("The return URL was not correct.  Received %s", ep.URL)
     }
     ep, _ = result.EndpointFor(endpoints.DynamodbServiceID, "us-west-2", opt)
-    if ep.URL != "http://1.0.0.0:9570" { // See DynamoDb specific test below
+    if ep.URL != "http://1.0.0.0:9569" { // See DynamoDb specific test below
         t.Errorf("The return URL was not correct.  Received %s", ep.URL)
     }
     ep, _ = result.EndpointFor(endpoints.StreamsDynamodbServiceID, "us-west-2", opt)
@@ -681,7 +738,7 @@ func Test_EndpointFor_OnlyRegisteredServices(t *testing.T) {
     Times(2).
     Return(nil)
 
-    result, err := newLocalstack(services, m, Localstack_Repository, Localstack_Tag)
+    result, err := newLocalstack(services, m, Localstack_Name, Localstack_Repository, Localstack_Tag)
 
     if err != nil {
         log.Fatal("We were expecting the returned error to be nil.")
@@ -829,7 +886,7 @@ func Test_CreateAWSSession(t *testing.T) {
     Times(2).
     Return(nil)
 
-    result, err := newLocalstack(services, m, Localstack_Repository, Localstack_Tag)
+    result, err := newLocalstack(services, m, Localstack_Name, Localstack_Repository, Localstack_Tag)
 
     if err != nil {
         log.Fatal("We were expecting the returned error to be nil.")

@@ -68,7 +68,7 @@ func (l Localstack) EndpointFor(service, region string, optFns ...func(*endpoint
         return endpoints.ResolvedEndpoint { URL: fmt.Sprintf("http://%s", l.Resource.GetHostPort("4568/tcp")) }, nil
     } else if service == endpoints.DynamodbServiceID &&
               l.Services.Contains("dynamodb") {
-        return endpoints.ResolvedEndpoint { URL: fmt.Sprintf("http://%s", l.Resource.GetHostPort("4570/tcp")) }, nil
+        return endpoints.ResolvedEndpoint { URL: fmt.Sprintf("http://%s", l.Resource.GetHostPort("4569/tcp")) }, nil
     } else if service == endpoints.StreamsDynamodbServiceID &&
               l.Services.Contains("dynamodbstreams")  {
         return endpoints.ResolvedEndpoint { URL: fmt.Sprintf("http://%s", l.Resource.GetHostPort("4570/tcp")) }, nil
@@ -141,45 +141,46 @@ func (l *Localstack) CreateAWSSession() *session.Session {
 
 // NewLocalstack creates a new Localstack docker container based on the latest version.
 func NewLocalstack(services *LocalstackServiceCollection) (*Localstack, error) {
-	return NewSpecificLocalstack(services, Localstack_Repository, "latest")
+	return NewSpecificLocalstack(services, "", Localstack_Repository, "latest")
 }
 
 // NewSpecificLocalstack creates a new Localstack docker container based on
-// the given repository and tag given.  NOTE:  The Docker image used should be a 
+// the given name, repository, and tag given.  NOTE:  The Docker image used should be a 
 // Localstack image.  The behavior is unknown otherwise.  This method is provided
 // to allow special situations like using a tag other than latest or when referencing 
 // an internal Localstack image.
-func NewSpecificLocalstack(services *LocalstackServiceCollection, repository, tag string) (*Localstack, error) {
-	return newLocalstack(services, &_DockerWrapper{ }, repository, tag)
+func NewSpecificLocalstack(services *LocalstackServiceCollection, name, repository, tag string) (*Localstack, error) {
+	return newLocalstack(services, &_DockerWrapper{ }, name, repository, tag)
 }
 
-func getLocalstack(services *LocalstackServiceCollection, dockerWrapper DockerWrapper, repository, tag string) (*dockertest.Resource, error) {
-	
-	containers, err := dockerWrapper.ListContainers(docker.ListContainersOptions { All: true })
-	if err != nil {
-		return nil, errors.New(fmt.Sprintf("Unable to retrieve docker containers: %s", err))
-	}
-	for _, c := range containers {
-		if c.Image == fmt.Sprintf("%s:%s", repository, tag) {
-			container, err := dockerWrapper.InspectContainer(c.ID)
-			if err != nil { return nil, errors.New(fmt.Sprintf("Unable to inspect container %s: %s", c.ID, err))
-			}
-			for _, env := range container.Config.Env {
-				if env == fmt.Sprintf("SERVICES=%s", services.GetServiceMap()) {
-					return &dockertest.Resource{ Container: container }, nil
-				}
-			}
+func getLocalstack(services *LocalstackServiceCollection, dockerWrapper DockerWrapper, name, repository, tag string) (*dockertest.Resource, error) {
 
-			return nil, errors.New("We're only supporting one Localstack instance at a time.")
-		}
-	}
+    if name != "" {
+        containers, err := dockerWrapper.ListContainers(docker.ListContainersOptions { All: true })
+        if err != nil {
+            return nil, errors.New(fmt.Sprintf("Unable to retrieve docker containers: %s", err))
+        }
+        for _, c := range containers {
+            if c.Image == fmt.Sprintf("%s:%s", repository, tag) {
+                for _,internalName := range c.Names {
+                    if internalName == fmt.Sprintf("/%s", name) {
+                        container, err := dockerWrapper.InspectContainer(c.ID)
+                        if err !=  nil {
+                            return nil, errors.New(fmt.Sprintf("Unable to inspect container %s: %s", c.ID, err))
+                        }
+                        return &dockertest.Resource{ Container: container }, nil
+                    }
+                }
+            }
+        }
+    }
 
 	return nil, nil
 }
 
-func newLocalstack(services *LocalstackServiceCollection, wrapper DockerWrapper, repository, tag string) (*Localstack, error) {
+func newLocalstack(services *LocalstackServiceCollection, wrapper DockerWrapper, name, repository, tag string) (*Localstack, error) {
 
-	localstack, err := getLocalstack(services, wrapper, repository, tag)
+	localstack, err := getLocalstack(services, wrapper, name, repository, tag)
 	if err != nil {
 		return nil, err	
 	}
@@ -190,6 +191,7 @@ func newLocalstack(services *LocalstackServiceCollection, wrapper DockerWrapper,
 		localstack, err = wrapper.RunWithOptions(&dockertest.RunOptions{
 			Repository: repository,
 			Tag: tag,
+            Name: name, //If name == "", docker ignores it.
 			Env: []string{
 				fmt.Sprintf("SERVICES=%s", services.GetServiceMap()),
 			},
