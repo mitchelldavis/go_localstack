@@ -7,7 +7,7 @@ import (
     "os"
     "github.com/mitchelldavis/go_localstack/pkg/localstack"
 
-    "github.com/aws/aws-sdk-go/service/apigateway"
+    //"github.com/aws/aws-sdk-go/service/apigateway"
     "github.com/aws/aws-sdk-go/service/kinesis"
     "github.com/aws/aws-sdk-go/service/dynamodb"
     "github.com/aws/aws-sdk-go/service/dynamodbstreams"
@@ -41,7 +41,7 @@ func TestMain(t *testing.M) {
 // We create a seperate iniitalize function so we can call
 // `defer LOCALSTACK.Destroy()`
 func InitializeLocalstack(t *testing.M) int {
-    apigateway, _ := localstack.NewLocalstackService("apigateway")
+    //apigateway, _ := localstack.NewLocalstackService("apigateway")
     kinesis, _ := localstack.NewLocalstackService("kinesis")
     dynamodb, _ := localstack.NewLocalstackService("dynamodb")
     dynamodbstreams, _ := localstack.NewLocalstackService("dynamodbstreams")
@@ -63,7 +63,7 @@ func InitializeLocalstack(t *testing.M) int {
 
     // Gather them all up...
     LOCALSTACK_SERVICES := &localstack.LocalstackServiceCollection {
-        *apigateway,
+        //*apigateway,
         *kinesis,
         *dynamodb,
         *dynamodbstreams,
@@ -121,16 +121,17 @@ func InitializeLocalstack(t *testing.M) int {
     return t.Run()
 }
 
+// TODO:
 func Test_APIGateway(t *testing.T) {
-    svc := apigateway.New(LOCALSTACK.CreateAWSSession())
-    result, err := svc.GetRestApis(&apigateway.GetRestApisInput{})
-    if err != nil {
-        t.Error(err)
-    }
+    //svc := apigateway.New(LOCALSTACK.CreateAWSSession())
+    //result, err := svc.GetRestApis(&apigateway.GetRestApisInput{})
+    //if err != nil {
+    //    t.Error(err)
+    //}
 
-    if len(result.Items) != 0 {
-        t.Error("The number of Rest Apis returned should be zero.")
-    }
+    //if len(result.Items) != 0 {
+    //    t.Error("The number of Rest Apis returned should be zero.")
+    //}
 }
 func Test_Kinesis(t *testing.T) {
     svc := kinesis.New(LOCALSTACK.CreateAWSSession())
